@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="This is the app for lancaster produce for their tuesday sales">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <title>Lancaster Produce | Tuesdata</title>
+    <!-- for shoelace (trying it out) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/themes/light.css" />
+    <script type="module"
+        src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.20.1/cdn/shoelace-autoloader.js"></script>
+    <style>
+        * {
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            opacity: 0;
+            background-image: linear-gradient(45deg, #e00 0%, #e50 60%, #eb0 100%);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        body.ready {
+            opacity: 1;
+            background-image: linear-gradient(45deg, #eb0 0%, #e50 40%, #e00 100%);
+            transition: 0.25s opacity;
+        }
+
+        header {
+            padding: 5px;
+        }
+
+        div.flex-row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-around;
+
+        }
+
+        .flex-column {
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-content: center;
+            align-items: center;
+
+        }
+
+        .block {
+            display: block;
+        }
+
+        h1 {
+            background-image: linear-gradient(225deg, rgb(175, 140, 0) 0%, rgb(200, 75, 0) 40%, rgb(238, 0, 0) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+
+        footer {
+            padding: 10px;
+        }
+
+        sl-button {
+            min-width: 50px;
+        }
+
+        sl-card {
+            margin: 5px 10px;
+        }
+
+        main>sl-card::part(base) {
+            min-height: calc(100vh - 200px);
+        }
+
+        label {
+            display: block;
+        }
+
+        input {
+            padding-left: 3px;
+            margin: 5px;
+            height: 1.5rem;
+            border: 2px solid #ccc;
+            border-radius: 0.5rem;
+        }
+
+        label>input[type='checkbox'] {
+            width: 1em;
+            height: 1em;
+            border-radius: 50%;
+        }
+
+        label>input:checked {
+            background-color: green;
+        }
+
+        #table {
+            width: 100%;
+            min-width: 200px;
+        }
+
+        #overlay {
+            display: none;
+            z-index: 2;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(50, 50, 50, 0.5);
+
+            &>section {
+                margin: auto 5px;
+                padding-top: 20px;
+                padding-left: 10px;
+                padding-right: 10px;
+                min-height: 80vh;
+                background-color: #fafafa;
+                border-radius: 2rem;
+
+                &>sl-button {
+                    margin-left: 5px;
+                    float: right;
+                }
+            }
+        }
+
+        #over-title {
+            text-align: center;
+            border-bottom: 1px solid grey;
+        }
+
+        .light-transparent {
+            width: 100%;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 10px 10px 10px 0px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            min-width: 300px;
+            max-width: 1200px;
+            text-align: center;
+            margin: 0 auto;
+        }
+
+        .nav-btn::part(base) {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border-radius: 20px;
+        }
+
+        .nav-btn::part(base):hover {
+            box-shadow: 5px 5px 5px 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-btn:hover {
+            transition: all 0.2s ease;
+            transform: translateY(-0.5em);
+        }
+
+        #settings-drawer {
+            &::part(base) {
+                --size: 80vw;
+            }
+        }
+
+        .large-gap {
+            gap: 0.75em;
+        }
+
+        .tue1>sl-button {
+            width: 150px;
+        }
+
+        .tues-cust-op {
+            width: max(50%, 200px);
+            display: inline-block;
+        }
+
+        sl-select::part(base) {
+            display: inline;
+        }
+    </style>
+    <!-- <script>navigator.serviceWorker.register("service-worker.js")</script> -->
+    <!-- <link rel="manifest" href="manifest.json" /> -->
+</head>
+
+<body>
+
+    <header>
+        <div class="light-transparent flex-column block">
+            <sl-tooltip content="The thing better than monday(CRM) ... " trigger="hover">
+                <h1>TuesData</h1>
+            </sl-tooltip>
+            <p>Your own CRM </p>
+        </div>
+        <br>
+        <div class="flex-row large-gap">
+            <sl-button href="#tuesday" class="nav-btn">Tuesday</sl-button>
+            <sl-button href="#table" class="nav-btn">Sales</sl-button>
+            <sl-button href="#input" class="nav-btn">New order</sl-button>
+            <sl-button href="#customer-card" class="nav-btn">View Customers</sl-button>
+            <sl-button href="#advanced" class="nav-btn">Advanced Data view</sl-button>
+            <sl-button href="#analytics" class="nav-btn">Analytics</sl-button>
+            <sl-button class="nav-btn" id="settings-btn" circle><sl-icon name="gear"
+                    label="Settings"></sl-icon></sl-button>
+        </div>
+    </header>
+    <sl-drawer id="settings-drawer" label="Settings" class="drawer-overview">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        <sl-button slot="footer" variant="primary" id="set-draw-close">Close</sl-button>
+    </sl-drawer>
+    <!-- Main May be customised to be the section desired (when using a SPA) -->
+    <main>
+        <sl-card id="tuesday" class="block">
+            <h2>Tuesday:</h2>
+            <div id="tues-customers">
+
+            </div>
+        </sl-card>
+        <sl-card id="table-card" class="block">
+            Sales
+            <table id="table">
+                <thead>
+                    <th>Date</th>
+                    <th>Revenue</th>
+                    <th>No sales</th>
+                    <th>Expectation</th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>5/8/2025</th>
+                        <th>11.60</th>
+                        <th>5</th>
+                        <th>Average</th>
+                    </tr>
+                    <tr>
+                        <th>29/7/2025</th>
+                        <th>11.20</th>
+                        <th>6</th>
+                        <th>Bad</th>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="overlay">
+                <section>
+                    <h3 id="over-title">Default</h3>
+                    <sl-button onclick="document.getElementById('overlay').style.display = 'none'">&times;</sl-button>
+                    <br>
+                    <div id="over-content">Lorem ipsum dolor sit amet consectetur adipisicing elit. Perferendis, odit
+                        rem aliquam libero magni voluptatibus quam numquam? Nisi, cumque est laborum officia temporibus
+                        repellendus eaque incidunt aliquid voluptates quis laudantium.</div>
+                </section>
+            </div>
+        </sl-card>
+        <sl-card id="input" class="block">
+            <p title="Quick input">Sale:</p>
+            <form>
+                <label for="date">Select a date:<input type="date" id="date" name="date" required></label>
+                <label for="customer">
+                    Name:<input type="text" name="customer" id="customer" placeholder="Mick franklin"
+                        title="customer name" required>
+                </label>
+                <label for="quantity">Number of eggs sold <input type="text" id="quantity" name="quantity"
+                        placeholder="12" required>
+                </label>
+                <label for="due">Amount due <input type="number" name="due" id="due" placeholder="3.6"></label>
+                <label for="payment">Paid in cash: <input type="checkbox" name="payment" id="payment" required></label>
+                <label for="amount">Payment amount <input type="text" id="amount" name="amount"></label>
+                <sl-button id="quick-submit">Submit</sl-button>
+            </form>
+        </sl-card>
+        <sl-card id="customer-card" class="block">
+            <div id="customers">
+                <p>Customer Info</p>
+                <div id="list-insert">
+                </div>
+            </div>
+        </sl-card>
+        <sl-card id="advanced" class="block">
+            <h3>Advanced Data</h3>
+            <div id="idb-customers"></div>
+            <div id="idb-sales"></div>
+        </sl-card>
+        <sl-card id="analytics" class="block">
+            <h3>Analytics:</h3>
+            <div id="sales-chart"></div>
+        </sl-card>
+    </main>
+    <footer class="light-transparent block">
+        <h2>This is the footer</h2>
+        <a href="http://lancasterproduce.com">Main site</a>
+    </footer>
+    <!-- Using dexie for IndexDB (simpler to use) -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <script>
+        hideallshow1('tuesday')
+        // Code for the database
+
+        // make database
+        var db = new Dexie("data");
+
+        const timeNow = new Date()
+        console.log(timeNow)
+        // On update && the databse is structred like...
+        db.version(1).stores({
+            customers: `
+                ++id,
+                name,
+                location,
+                regularity,
+                lastVisited`,
+            sales: `
+                id,
+                date,
+                customer,
+                quantity,
+                price,
+                amount,
+                paid`,
+        });
+
+        function makeSale(id = 0, date = timeNow, customer, quantity = 12, price = 3.6, amount = 0, paid = false) {
+            return { "id": id, "date": date, "customer": customer, "quantity": quantity, "price": price, "amount": amount, "paid": paid }
+        }
+
+        document.getElementById("quick-submit").addEventListener("click", (e) => {
+            const saleId = db.sales.orderBy("id").toArray()
+            console.log(saleId)
+            db.sales.put(makeSale(
+                undefined,
+                document.getElementById("date").value,
+                document.getElementById("customer").value,
+                document.getElementById("quantity").value,
+                document.getElementById("due").value,
+                document.getElementById("amount").value,
+                document.getElementById("payment").value
+            )).then(() => {
+                alert("database sales are:", db.sales)
+            })
+        })
+
+        // For customers
+        let isThereCustomers = false;
+        let customerNames = ['Paul Bazinsky', 'Mick franklin', 'Mr rob', 'No:4', 'Ice cream lady', 'australian', 'Black and white', 'Lizz diver', 'No eggs', 'No:10', 'No:12', 'Booth Bricklayer', 'Red door', 'Yellow door', 'Caravan people', 'Tina', 'Peter the painter', 'No:36', 'No:38', 'No:40', 'South lodge', 'No:44']
+        let regularness = [1, 0, 3, 5, 2, 5, 3, 0, 5, 5, 5, 1, 5, 4, 1, 5, 5, 1, 3, 5, 1, 3]
+        let regExpress = ['weekly', 'fortnightly', 'tri-weekly', 'uncommon', 'infrequent', 'not a customer']
+        let customerCounter = 0;
+        let listToInsert;
+        // Checks for customers (uses promises)
+        const customerCheck = db.customers.orderBy("id").toArray().then((data) => {
+            if (data.length) {
+                isThereCustomers = true;
+                console.info("There are customers:")
+                console.table(data)
+            }
+        }).then(() => {
+            if (!isThereCustomers) { // If there isn't customers add them
+                // Note: date set up all customers were(not) visited so that is the date used
+                let setUpDate = Date.parse("2025-08-16")
+                for (i = 1; i <= 44; i++) {
+                    if ((i % 2 == 1 && i > 9) || i == 22 || i == 24 || i == 30 || i == 32 || i == 14) {
+                        continue
+                    }
+                    let locat = `No:${i}`
+
+                    let person = { name: customerNames[customerCounter], location: locat, regularity: regExpress[regularness[customerCounter]], lastVisited: setUpDate }
+                    customerCounter++;
+                    db.customers.put(person)
+                }
+                db.customers.put({ name: 'Trevor Smith', location: 'Grange de lings', regularity: regExpress[0], lastVisited: setUpDate })
+            }
+        }).then(() => {
+            listToInsert = "<ul>"
+            db.customers.orderBy("id").toArray().then((data, err) => {
+                if (err) console.error(err);
+                data.forEach(element => {
+                    listToInsert += `<li><div class="flex-row" style="justify-content:flex-start;"> ${renderCustomerTues(element)} </div></li>`
+                });
+            }).then(() => {
+                listToInsert += "</ul>"
+                document.getElementById("list-insert").innerHTML = listToInsert;
+            })
+
+        })
+
+        const makeTues = customerCheck.then(() => {
+            const placeIn = document.getElementById("tues-customers")
+            const fragment = new DocumentFragment();
+            const options = ['Away', 'Next_week', 'Next...', 'No_response', 'Order']
+            const subBtn = document.createElement('sl-button')
+            subBtn.innerHTML = 'Submit';
+            subBtn.addEventListener("click", () => {
+                submitTuesData();
+            })
+            db.customers.orderBy("id").toArray().then((data, err) => {
+                if (err) console.error(err);
+                data.forEach((each) => {
+                    const card = document.createElement("sl-card")
+                    card.classList.add("block")
+                    card.classList.add("tue1")
+                    let customerModalButton = document.createElement("sl-button")
+                    customerModalButton.innerHTML = `${each.name}`;
+                    card.appendChild(customerModalButton)
+                    const customerOptionSL = document.createElement("sl-select")
+                    customerOptionSL.setAttribute('label', 'Response')
+                    customerOptionSL.setAttribute('id', `${each.name}1`)
+                    customerOptionSL.classList.add("tues-cust-op")
+                    options.forEach((option) => {
+                        let x2 = document.createElement('sl-option')
+                        x2.setAttribute('value', option)
+                        x2.innerHTML = option;
+                        customerOptionSL.appendChild(x2)
+                    })
+                    customerOptionSL.addEventListener('sl-change', customerOptionSLChange(this))
+                    card.appendChild(customerOptionSL)
+                    fragment.appendChild(card)
+                })
+                fragment.appendChild(document.createElement('hr'))
+                fragment.appendChild(subBtn)
+                placeIn.appendChild(fragment)
+            })
+        })
+        function customerOptionSLChange(a) {
+            console.log("A:", a)
+        }
+        function submitTuesData() {
+            console.log("clicked this function")
+        }
+        function renderCustomerTues(customer) {
+            let returnableHTML = ` 
+                <sl-dropdown>
+                    <sl-button slot = "trigger" caret> ${customer.name}</sl-button >
+                    <sl-menu>
+                        <sl-menu-item value="cut">New order</sl-menu-item>
+                        <sl-menu-item value="paste">Notes</sl-menu-item>
+                        <sl-menu-item value="copy">More</sl-menu-item>
+                    </sl-menu>
+                </sl - dropdown > `
+            return returnableHTML
+        }
+
+        // make the buttons work
+        document.querySelectorAll("sl-button.nav-btn").forEach((e) => {
+            let target = e.attributes[0].value
+            e.addEventListener("click", (event) => {
+                switch (target) {
+                    case '#tuesday':
+                        hideallshow1('tuesday')
+                        break;
+                    case '#table':
+                        hideallshow1('table-card')
+                        break;
+                    case '#input':
+                        hideallshow1('input')
+                        break;
+                    case '#customer-card':
+                        hideallshow1('customer-card')
+                        break;
+                    case '#advanced':
+                        hideallshow1('advanced')
+                        break;
+                    case '#analytics':
+                        hideallshow1('analytics')
+                        break;
+                    case 'nav-btn':
+                        console.log("Settings open")
+                        break;
+                    default:
+                        console.error("Default switch. Target is:", target)
+                        break;
+                }
+            })
+        })
+
+        function hideallshow1(toShow) {
+            try {
+                document.querySelectorAll("main>sl-card.block").forEach((e) => {
+                    e.style.display = 'none';
+                })
+                document.getElementById(toShow).style.display = 'block'
+            } catch (error) {
+                console.error("There is an error with function hideallshow1: check input", error)
+            }
+        }
+
+        // For the settings button
+        const settingDraw = document.getElementById("settings-drawer")
+        const settingBtn = document.getElementById("settings-btn")
+        const settingClose = document.getElementById("set-draw-close")
+        settingBtn.addEventListener("click", () => {
+            settingDraw.show()
+        })
+        settingClose.addEventListener("click", () => {
+            settingDraw.hide()
+        })
+
+    </script>
+
+    <!-- For shoelace - to eliminate Fouce (page displaying before ready) -->
+    <script type="module">
+        await Promise.allSettled([
+            customElements.whenDefined('sl-button'),
+            customElements.whenDefined('sl-card'),
+        ]);
+
+        // Button, card, and rating are registered now! Add
+        // the `ready` class so the UI fades in.
+        document.body.classList.add('ready');
+    </script>
+</body>
+
+</html>
